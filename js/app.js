@@ -113,8 +113,8 @@ async function sendMessage() {
     appendTypingIndicator();
 
     try {
-        // Localhost 3000 हटाकर relative path (/api/chat) कर दिया है ताकि यह Local और Render दोनों पर चले
-const response = await fetch('/api/chat', {
+        // Render के Live Backend Server का Full URL
+const response = await fetch('https://aivora-ai-l5f2.onrender.com/api/chat', {
     method: 'POST',
     headers: { 'Content-Type': 'application/json' },
     body: JSON.stringify({
