@@ -10,12 +10,12 @@ window.initAivoraApp = function(user) {
 };
 
 function loadLocalChats() {
-    const saved = localStorage.getItem(`aivora_chats_${currentUser.uid}`);
+    const saved = localStorage.getItem(`aivora_chats_${currentUser ? currentUser.uid : 'guest'}`);
     chats = saved ? JSON.parse(saved) : [];
 }
 
 function saveLocalChats() {
-    localStorage.setItem(`aivora_chats_${currentUser.uid}`, JSON.stringify(chats));
+    localStorage.setItem(`aivora_chats_${currentUser ? currentUser.uid : 'guest'}`, JSON.stringify(chats));
 }
 
 function createNewChat() {
@@ -41,13 +41,17 @@ function switchChat(chatId) {
     const messageList = document.getElementById('messageList');
 
     if (!chat || chat.messages.length === 0) {
-        welcomeScreen.classList.remove('hidden');
-        messageList.classList.add('hidden');
-        messageList.innerHTML = '';
+        if (welcomeScreen) welcomeScreen.classList.remove('hidden');
+        if (messageList) {
+            messageList.classList.add('hidden');
+            messageList.innerHTML = '';
+        }
     } else {
-        welcomeScreen.classList.add('hidden');
-        messageList.classList.remove('hidden');
-        renderMessages(chat.messages);
+        if (welcomeScreen) welcomeScreen.classList.add('hidden');
+        if (messageList) {
+            messageList.classList.remove('hidden');
+            renderMessages(chat.messages);
+        }
     }
 
     renderChatHistory();
@@ -55,6 +59,7 @@ function switchChat(chatId) {
 
 function renderChatHistory() {
     const historyList = document.getElementById('historyList');
+    if (!historyList) return;
     historyList.innerHTML = '';
 
     chats.forEach(chat => {
@@ -71,7 +76,7 @@ function renderChatHistory() {
 }
 
 function deleteChat(chatId, e) {
-    e.stopPropagation();
+    if (e) e.stopPropagation();
     chats = chats.filter(c => c.id !== chatId);
     saveLocalChats();
     if (currentChatId === chatId) {
@@ -85,6 +90,7 @@ function deleteChat(chatId, e) {
 
 async function sendMessage() {
     const input = document.getElementById('composerInput');
+    const sendBtn = document.getElementById('sendBtn');
     const text = input.value.trim();
     if (!text && !attachedFile) return;
 
@@ -109,61 +115,50 @@ async function sendMessage() {
     autoExpandTextarea(input);
     switchChat(currentChatId);
 
-    // Append Typing Indicator
+    // Disable button & Append Typing Indicator
+    if (sendBtn) sendBtn.disabled = true;
     appendTypingIndicator();
 
     try {
-    // 1. Render Backend पर Request भेजें
-    const response = await fetch('https://aivora-ai-l5f2.onrender.com/api/chat', {
-        method: 'POST',
-        headers: { 'Content-Type': 'application/json' },
-        body: JSON.stringify({
-            message: fullMessageContent,
-            history: chat.messages.slice(0, -1)
-        })
-    });
+        // 1. Render Backend पर Request भेजें
+        const response = await fetch('https://aivora-ai-l5f2.onrender.com/api/chat', {
+            method: 'POST',
+            headers: { 'Content-Type': 'application/json' },
+            body: JSON.stringify({
+                message: fullMessageContent,
+                history: chat.messages.slice(0, -1)
+            })
+        });
 
-    // 2. JSON Response प्राप्त करें
-    const data = await response.json();
-
-    if (!response.ok) {
-        throw new Error(data.details || data.error || "Server error occurred");
-    }
-
-    // 3. AI का जवाब निकालें
-    const botReply = data.reply || data.text || "No reply from AI.";
-
-    // 4. "Thinking..." हटाकर UI में AI का असली मैसेज डालें
-    // (यदि आपके पास मैसेज ऐड करने का अलग फंक्शन है, जैसे appendMessage या renderMessage, तो उसे botReply के साथ कॉल करें)
-    const thinkingMessageElement = document.querySelector('.thinking'); // या जो भी आपकी thinking क्लास/Element हो
-    if (thinkingMessageElement) {
-        thinkingMessageElement.textContent = botReply;
-        thinkingMessageElement.classList.remove('thinking');
-    }
-
-} catch (error) {
-    console.error("Error communicating with AI:", error);
-    alert("API Error: " + error.message);
-}
         const data = await response.json();
-        removeTypingIndicator();
 
-        if (response.ok) {
-            chat.messages.push({ role: 'assistant', content: data.reply });
-        } else {
-            chat.messages.push({ role: 'assistant', content: `Error: ${data.error || 'Something went wrong.'}` });
+        if (!response.ok) {
+            throw new Error(data.details || data.error || "Server error occurred");
         }
-    } catch (err) {
-        removeTypingIndicator();
-        chat.messages.push({ role: 'assistant', content: "Network error. Make sure backend server is running on port 3000." });
-    }
 
-    saveLocalChats();
-    switchChat(currentChatId);
+        // 2. AI का जवाब निकालें
+        const botReply = data.reply || data.text || "No response text received.";
+        chat.messages.push({ role: 'assistant', content: botReply });
+
+    } catch (error) {
+        console.error("Error communicating with AI:", error);
+        chat.messages.push({ 
+            role: 'assistant', 
+            content: `Error: ${error.message}` 
+        });
+    } finally {
+        // 3. Cleanup: Typing indicator हटाएं और UI अपडेट करें
+        removeTypingIndicator();
+        saveLocalChats();
+        switchChat(currentChatId);
+        if (sendBtn) sendBtn.disabled = false;
+        input.focus();
+    }
 }
 
 function renderMessages(messages) {
     const messageList = document.getElementById('messageList');
+    if (!messageList) return;
     messageList.innerHTML = '';
 
     messages.forEach(msg => {
@@ -176,19 +171,31 @@ function renderMessages(messages) {
         if (msg.role === 'user') {
             bubble.textContent = msg.content;
         } else {
-            bubble.innerHTML = marked.parse(msg.content);
+            // Marked parser fallback in case window.marked is not defined
+            if (typeof marked !== 'undefined') {
+                bubble.innerHTML = marked.parse(msg.content);
+            } else {
+                bubble.textContent = msg.content;
+            }
         }
 
         wrapper.appendChild(bubble);
         messageList.appendChild(wrapper);
     });
 
-    hljs.highlightAll();
+    if (typeof hljs !== 'undefined') {
+        hljs.highlightAll();
+    }
     messageList.scrollTop = messageList.scrollHeight;
 }
 
 function appendTypingIndicator() {
     const messageList = document.getElementById('messageList');
+    if (!messageList) return;
+    
+    // Check if already exists
+    if (document.getElementById('typingIndicator')) return;
+
     const wrapper = document.createElement('div');
     wrapper.id = 'typingIndicator';
     wrapper.className = 'msg-wrapper ai';
@@ -204,9 +211,11 @@ function removeTypingIndicator() {
 
 // Helpers
 function autoExpandTextarea(element) {
+    if (!element) return;
     element.style.height = 'auto';
     element.style.height = element.scrollHeight + 'px';
-    document.getElementById('sendBtn').disabled = !element.value.trim();
+    const sendBtn = document.getElementById('sendBtn');
+    if (sendBtn) sendBtn.disabled = !element.value.trim();
 }
 
 function handleKeyDown(e) {
@@ -217,9 +226,12 @@ function handleKeyDown(e) {
 }
 
 function useSuggestion(text) {
-    document.getElementById('composerInput').value = text;
-    autoExpandTextarea(document.getElementById('composerInput'));
-    sendMessage();
+    const input = document.getElementById('composerInput');
+    if (input) {
+        input.value = text;
+        autoExpandTextarea(input);
+        sendMessage();
+    }
 }
 
 function handleFileSelect(e) {
@@ -232,36 +244,36 @@ function handleFileSelect(e) {
 
 function removeSelectedFile() {
     attachedFile = null;
-    document.getElementById('fileInput').value = '';
-    document.getElementById('filePreview').classList.add('hidden');
+    const fileInput = document.getElementById('fileInput');
+    if (fileInput) fileInput.value = '';
+    const filePreview = document.getElementById('filePreview');
+    if (filePreview) filePreview.classList.add('hidden');
 }
 
 function toggleSidebar() {
-    document.getElementById('sidebar').classList.toggle('open');
+    const sidebar = document.getElementById('sidebar');
+    if (sidebar) sidebar.classList.toggle('open');
 }
 
 function clearCurrentChat() {
     if (currentChatId) deleteChat(currentChatId, new Event('click'));
 }
 
-function openSettingsModal() { document.getElementById('settingsModal').classList.remove('hidden'); }
-function closeSettingsModal() { document.getElementById('settingsModal').classList.add('hidden'); }
+function openSettingsModal() { 
+    const modal = document.getElementById('settingsModal');
+    if (modal) modal.classList.remove('hidden'); 
+}
+
+function closeSettingsModal() { 
+    const modal = document.getElementById('settingsModal');
+    if (modal) modal.classList.add('hidden'); 
+}
 
 function changeTheme(theme) {
     document.body.className = theme === 'light' ? 'light-theme' : 'dark-theme';
 }
 
 function escapeHtml(str) {
+    if (!str) return '';
     return str.replace(/&/g, "&amp;").replace(/</g, "&lt;").replace(/>/g, "&gt;");
 }
-
-
-
-
-
-
-
-
-
-
-
