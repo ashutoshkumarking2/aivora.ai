@@ -28,9 +28,9 @@ app.post('/api/chat', async (req, res) => {
             return res.status(400).json({ error: "Message is required" });
         }
 
-        // Model name corrected to 'gemini-2.0-flash'
+        // Model name updated to gemini-2.5-flash
         const response = await ai.models.generateContent({
-            model: 'gemini-2.0-flash',
+            model: 'gemini-2.5-flash',
             contents: message,
         });
 
