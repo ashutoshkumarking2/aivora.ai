@@ -1,0 +1,11 @@
+[build]
+  publish = "."
+
+[build.environment]
+  NETLIFY_SKIP_INJECT_NAV = "true"
+
+[context.production]
+  NETLIFY_DISABLE_TOOLBAR = "true"
+
+[context.deploy-preview]
+  NETLIFY_DISABLE_TOOLBAR = "true"
