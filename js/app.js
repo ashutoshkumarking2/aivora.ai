@@ -113,15 +113,38 @@ async function sendMessage() {
     appendTypingIndicator();
 
     try {
-        // Render के Live Backend Server का Full URL
-const response = await fetch('https://aivora-ai-l5f2.onrender.com/api/chat', {
-    method: 'POST',
-    headers: { 'Content-Type': 'application/json' },
-    body: JSON.stringify({
-        message: fullMessageContent,
-        history: chat.messages.slice(0, -1)
-    })
-});
+    // 1. Render Backend पर Request भेजें
+    const response = await fetch('https://aivora-ai-l5f2.onrender.com/api/chat', {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify({
+            message: fullMessageContent,
+            history: chat.messages.slice(0, -1)
+        })
+    });
+
+    // 2. JSON Response प्राप्त करें
+    const data = await response.json();
+
+    if (!response.ok) {
+        throw new Error(data.details || data.error || "Server error occurred");
+    }
+
+    // 3. AI का जवाब निकालें
+    const botReply = data.reply || data.text || "No reply from AI.";
+
+    // 4. "Thinking..." हटाकर UI में AI का असली मैसेज डालें
+    // (यदि आपके पास मैसेज ऐड करने का अलग फंक्शन है, जैसे appendMessage या renderMessage, तो उसे botReply के साथ कॉल करें)
+    const thinkingMessageElement = document.querySelector('.thinking'); // या जो भी आपकी thinking क्लास/Element हो
+    if (thinkingMessageElement) {
+        thinkingMessageElement.textContent = botReply;
+        thinkingMessageElement.classList.remove('thinking');
+    }
+
+} catch (error) {
+    console.error("Error communicating with AI:", error);
+    alert("API Error: " + error.message);
+}
         const data = await response.json();
         removeTypingIndicator();
 
