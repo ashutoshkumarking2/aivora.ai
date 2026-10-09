@@ -13,13 +13,13 @@ import {
 
 // Your web app's Firebase configuration
 const firebaseConfig = {
-    apiKey: "AIzaSyAAzgs-nn0RSOCURftTYKjCPpUsqiMH3vM",
-    authDomain: "ecommerce-website-ff5d1.firebaseapp.com",
-    projectId: "ecommerce-website-ff5d1",
-    storageBucket: "ecommerce-website-ff5d1.firebasestorage.app",
-    messagingSenderId: "658375545234",
-    appId: "1:658375545234:web:5036452a8e9979788ff14b",
-    measurementId: "G-R14RG1BRKV"
+  apiKey: "AIzaSyAVqQKAK7Ou0Wj7yRaWLpjXyw7cD7GCk6Y",
+  authDomain: "aivora-ai-fc66b.firebaseapp.com",
+  projectId: "aivora-ai-fc66b",
+  storageBucket: "aivora-ai-fc66b.firebasestorage.app",
+  messagingSenderId: "504131514451",
+  appId: "1:504131514451:web:8d699f879c1fd1f6e556a6",
+  measurementId: "G-K0XB3P3QC9"
 };
 
 // Initialize Firebase App
