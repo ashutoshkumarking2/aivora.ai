@@ -24,10 +24,10 @@
     <link rel="canonical" href="https://ashutoshkumarking2.github.io/">
     <link rel="icon" type="image/x-icon" href="favicon.ico">
 
-    <!-- Font Awesome Icons -->
+    <!-- Font Awesome Icons for all buttons -->
     <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
 
-    <!-- COMPLETE EMBEDDED CSS (Fixed & Ready) -->
+    <!-- COMPLETE EMBEDDED CSS (All Buttons & Layout Styled) -->
     <style>
         :root {
             --bg-main: #0e0f12;
@@ -543,7 +543,7 @@
             border-bottom-left-radius: 2px; 
         }
 
-        /* Composer */
+        /* Composer Buttons & File Preview Styling */
         .composer-container { 
             width: 100%; 
             max-width: 768px; 
@@ -581,20 +581,33 @@
             padding: 8px; 
             border-radius: 6px; 
             font-size: 1rem; 
+            display: flex;
+            align-items: center;
+            justify-content: center;
         }
 
         .composer-btn:hover { 
             color: var(--text-primary); 
+            background: var(--bg-card);
         }
 
         .composer-btn.primary { 
-            color: var(--accent-color); 
+            background: var(--accent-color);
+            color: #fff; 
+            border-radius: 50%;
+            width: 34px;
+            height: 34px;
+        }
+
+        .composer-btn.primary:hover {
+            background: var(--accent-hover);
         }
 
         .composer-btn:disabled { 
             color: var(--text-secondary); 
             opacity: 0.4; 
             cursor: not-allowed; 
+            background: transparent;
         }
 
         .file-preview-bar { 
@@ -606,6 +619,7 @@
             border-radius: 6px; 
             margin-bottom: 8px; 
             font-size: 0.85rem; 
+            border: 1px solid var(--border-color);
         }
 
         .remove-file-btn { 
@@ -614,6 +628,13 @@
             color: var(--text-secondary); 
             cursor: pointer; 
             margin-left: auto; 
+            padding: 4px 8px;
+            border-radius: 4px;
+        }
+
+        .remove-file-btn:hover {
+            background: rgba(255, 255, 255, 0.1);
+            color: var(--danger);
         }
 
         /* Modal */
@@ -757,9 +778,11 @@
                     <img src="./images/aivoralogo.png" alt="Aivora Logo" class="brand-logo-sm">
                     <span class="brand-title">Aivora</span>
                 </div>
-                <button class="icon-btn mobile-only" onclick="toggleSidebar()"><i class="fa-solid fa-xmark"></i></button>
+                <!-- Sidebar Close Button (Mobile) -->
+                <button class="icon-btn mobile-only" onclick="toggleSidebar()" title="Close Menu"><i class="fa-solid fa-xmark"></i></button>
             </div>
 
+            <!-- New Chat Button -->
             <button class="btn btn-new-chat" onclick="createNewChat()">
                 <i class="fa-solid fa-plus"></i> New chat
             </button>
@@ -774,6 +797,7 @@
             </div>
 
             <div class="sidebar-footer">
+                <!-- Settings Button -->
                 <button class="nav-item" onclick="openSettingsModal()"><i class="fa-solid fa-gear"></i> Settings</button>
                 <div class="user-profile">
                     <img id="userAvatar" src="./images/aivoralogo.png" alt="Profile" class="user-avatar">
@@ -781,6 +805,7 @@
                         <span id="userName" class="user-name">User Name</span>
                         <span id="userEmail" class="user-email">user@example.com</span>
                     </div>
+                    <!-- Logout Button -->
                     <button class="icon-btn" title="Log out" onclick="handleLogout()"><i class="fa-solid fa-right-from-bracket"></i></button>
                 </div>
             </div>
@@ -789,9 +814,11 @@
         <!-- Main Chat Container -->
         <main class="chat-main">
             <header class="chat-header">
-                <button class="icon-btn" onclick="toggleSidebar()"><i class="fa-solid fa-bars"></i></button>
+                <!-- Sidebar Toggle (Menu) Button -->
+                <button class="icon-btn" onclick="toggleSidebar()" title="Toggle Menu"><i class="fa-solid fa-bars"></i></button>
                 <h3 id="currentChatTitle">New Chat</h3>
                 <div class="header-actions">
+                    <!-- Clear Conversation (Trash) Button -->
                     <button class="icon-btn" title="Clear Conversation" onclick="clearCurrentChat()"><i class="fa-solid fa-trash-can"></i></button>
                 </div>
             </header>
@@ -828,18 +855,21 @@
 
             <!-- Composer Footer -->
             <footer class="composer-container">
+                <!-- File Preview Bar with Remove (Cross) Button -->
                 <div id="filePreview" class="file-preview-bar hidden">
                     <i class="fa-solid fa-file"></i>
                     <span id="fileName">file.txt</span>
-                    <button class="remove-file-btn" onclick="removeSelectedFile()"><i class="fa-solid fa-xmark"></i></button>
+                    <button class="remove-file-btn" onclick="removeSelectedFile()" title="Remove file"><i class="fa-solid fa-xmark"></i> Remove</button>
                 </div>
                 <div class="composer-box">
+                    <!-- File Attach Button -->
                     <label for="fileInput" class="composer-btn" title="Attach file">
                         <i class="fa-solid fa-paperclip"></i>
                         <input type="file" id="fileInput" class="hidden" onchange="handleFileSelect(event)">
                     </label>
                     <textarea id="composerInput" rows="1" placeholder="Send a message..." onkeydown="handleKeyDown(event)" oninput="autoExpandTextarea(this)"></textarea>
-                    <button id="sendBtn" class="composer-btn primary" onclick="sendMessage()" disabled>
+                    <!-- Send Button -->
+                    <button id="sendBtn" class="composer-btn primary" onclick="sendMessage()" disabled title="Send message">
                         <i class="fa-solid fa-paper-plane"></i>
                     </button>
                 </div>
@@ -852,7 +882,8 @@
         <div class="modal-card">
             <div class="modal-header">
                 <h3>Settings</h3>
-                <button class="icon-btn" onclick="closeSettingsModal()"><i class="fa-solid fa-xmark"></i></button>
+                <!-- Close Settings Modal Button -->
+                <button class="icon-btn" onclick="closeSettingsModal()" title="Close Settings"><i class="fa-solid fa-xmark"></i></button>
             </div>
             <div class="modal-body">
                 <div class="setting-row">
@@ -878,7 +909,5 @@
     <script type="module" src="./js/firebase-config.js"></script>
     <script type="module" src="./js/auth.js"></script>
     <script defer src="./js/app.js"></script>
-    <!-- अगर ऐसा कोई script tag है तो इसे हटा दें -->
-<script src="https://identity.netlify.com/v1/netlify-identity-widget.js"></script>
 </body>
 </html>
